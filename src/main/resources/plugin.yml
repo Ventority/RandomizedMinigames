@@ -1,0 +1,6 @@
+name: RandomizedMinigames
+version: '${version}'
+main: de.ventority.randomizedminigames.RandomizedMinigames
+api-version: '1.21'
+commands:
+  minigames:
