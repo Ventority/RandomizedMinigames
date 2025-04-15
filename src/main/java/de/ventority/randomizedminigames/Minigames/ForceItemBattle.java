@@ -11,15 +11,16 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-public class ItemForceBattle implements Minigame, Listener {
+public class ForceItemBattle implements MinigameBase, Listener {
     private final HashMap<Player, ItemStack> currentItems;
     private final HashMap<Player, Integer> currentScores;
     private final HashMap<Player, BossBar> itemDisplays;
@@ -28,7 +29,7 @@ public class ItemForceBattle implements Minigame, Listener {
     private final List<Player> contestants;
 
 
-    public ItemForceBattle(List<Player> players) {
+    public ForceItemBattle(List<Player> players) {
         id = new Random().nextInt(1024);
         currentItems = new HashMap<>();
         currentScores = new HashMap<>();
@@ -140,6 +141,10 @@ public class ItemForceBattle implements Minigame, Listener {
 
         scoreboardManager.removeScoreboard();
         scoreboardManager = null;
+
+        for (Player player : contestants) {
+            player.sendTitle(winner.getDisplayName() + " hat gewonnen!", "Die Player werden jetzt zurückgesetzt.", 10, 70, 20);
+        }
         MinigameHandler.deleteGame(this);
     }
 
@@ -151,7 +156,15 @@ public class ItemForceBattle implements Minigame, Listener {
         else
             return;
         if (currentItems.containsKey(eventPlayer))
-            if (e.getItem().getItemStack().getType() == currentItems.get(eventPlayer).getType())
-                checkItem(eventPlayer, e.getItem().getItemStack());
+            checkItem(eventPlayer, e.getItem().getItemStack());
+    }
+
+    @EventHandler
+    public void onItemCraft(CraftItemEvent e) {
+        if (e.getCurrentItem() == null)
+            return;
+        Player p = (Player)e.getWhoClicked();
+        if (currentItems.containsKey(p))
+            checkItem(p, e.getCurrentItem());
     }
 }

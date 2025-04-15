@@ -1,12 +1,7 @@
 package de.ventority.randomizedminigames;
 
 import de.ventority.randomizedminigames.GUI.GUIClickEvent;
-import de.ventority.randomizedminigames.Minigames.ItemForceBattle;
-import de.ventority.randomizedminigames.Minigames.Minigame;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class RandomizedMinigames extends JavaPlugin {
     public static final ServerSettingsHandler serverSettingsHandler = new ServerSettingsHandler();

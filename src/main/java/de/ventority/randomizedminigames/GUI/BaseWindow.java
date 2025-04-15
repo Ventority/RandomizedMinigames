@@ -1,6 +1,5 @@
 package de.ventority.randomizedminigames.GUI;
 
-import de.ventority.randomizedminigames.Minigames.Minigame;
 import de.ventority.randomizedminigames.RandomizedMinigames;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -13,32 +12,16 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-public class MinigamesDisplayWindow {
+public abstract class BaseWindow {
     private final Player p;
     private final Inventory gui;
     private String status;
 
-    public MinigamesDisplayWindow(Player p, String status) {
+    public BaseWindow(Player p, String status) {
         this.p = p;
         gui = Bukkit.createInventory(p, 54, RandomizedMinigames.serverSettingsHandler.getServerName()
-                + ChatColor.RESET + ChatColor.DARK_GRAY + " Minigames");
+                + ChatColor.RESET + ChatColor.DARK_GRAY + " " + status);
         this.status = status;
-    }
-
-    public void buildWindow() {
-        fillBorder();
-        fillGUI();
-        p.openInventory(gui);
-    }
-
-    private void fillGUI() {
-        for (Minigame minigame : Minigame.values()) {
-            ItemStack item = new ItemStack(minigame.getMaterial(), 1);
-            ItemMeta meta = item.getItemMeta();
-            assert meta != null;
-            meta.setDisplayName(minigame.getName());
-            gui.addItem(item);
-        }
     }
 
     private void fillBorder() {
@@ -59,22 +42,32 @@ public class MinigamesDisplayWindow {
             gui.setItem(i + 5 * 9, new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1));
             gui.getItem(i + 5 * 9).setItemMeta(meta);
         }
-        ItemMeta meta1 = addNBT(gui.getItem(0).getItemMeta(), "Status", status);
-        meta1 = addNBT(meta1, "IsMinigamePlugin", "1");
-        gui.getItem(0).setItemMeta(meta1);
-
-        ItemStack settings = new ItemStack(Material.REDSTONE, 1);
-        ItemMeta settingsMeta = settings.getItemMeta();
-        settingsMeta.setDisplayName("Settings");
-        settingsMeta = addNBT(settingsMeta, "Status", "selectSettings");
-        settings.setItemMeta(settingsMeta);
-        gui.setItem(9, settings);
     }
 
-    private ItemMeta addNBT(ItemMeta meta, String key, String value) {
-        NamespacedKey key1 = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), key);
+    public abstract void fillGUI();
+
+    public void buildWindow() {
+        fillBorder();
+        fillGUI();
+        p.openInventory(gui);
+    }
+
+    public ItemMeta addNBT(ItemMeta meta, String key, String value) {
+        NamespacedKey namespacedKey = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), key);
         PersistentDataContainer data = meta.getPersistentDataContainer();
-        data.set(key1, PersistentDataType.STRING, value);
+        data.set(namespacedKey, PersistentDataType.STRING, value);
         return meta;
+    }
+
+    public Inventory getGUI() {
+        return gui;
+    }
+
+    private Player getPlayer() {
+        return p;
+    }
+
+    private String getStatus() {
+        return status;
     }
 }

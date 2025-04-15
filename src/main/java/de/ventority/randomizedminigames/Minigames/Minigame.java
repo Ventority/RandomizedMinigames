@@ -1,17 +1,28 @@
 package de.ventority.randomizedminigames.Minigames;
 
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.Material;
 
-import java.util.List;
+public enum Minigame {
+    ForceItemBattle(Material.DIAMOND_SWORD, "Force Item Battle", 0);
 
-public interface Minigame extends Listener {
-    int getID();
-    String getName();
-    int getPlayerIntervals();
-    int getMinPlayers();
-    int getMaxPlayers();
-    ItemStack getSymbol();
-    void addPlayers(List<Player> players);
+    Material material;
+    String name;
+    int number;
+    Minigame(Material m, String s, int i) {
+        material = m;
+        name = s;
+        number = i;
+    }
+
+    public Material getMaterial() {
+        return material;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getNumber() {
+        return number;
+    }
 }

@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 public class SelectMinigame implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        MinigamesDisplayWindow window = new MinigamesDisplayWindow((Player) commandSender, "MinigameSelect");
+        MinigamesDisplayWindow window = new MinigamesDisplayWindow((Player) commandSender, "minigameSelect");
         window.buildWindow();
         return true;
     }
