@@ -1,12 +1,10 @@
 package de.ventority.randomizedminigames.GUI;
 
-
 import de.ventority.randomizedminigames.MinigameHandler;
 import de.ventority.randomizedminigames.Minigames.Minigame;
 import de.ventority.randomizedminigames.RandomizedMinigames;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -22,51 +20,47 @@ public class GUIClickEvent implements Listener {
         Inventory inventory = event.getClickedInventory();
         if (inventory == null) return;
         if (inventory.getItem(0) == null) return;
-        ItemStack firstItem = inventory.getItem(0);
-        if (hasNBTData(firstItem)) {
+        if (isMinigamePlugin(inventory.getItem(0))) {
             event.setCancelled(true);
-            if (getStatus(firstItem).equals("selectMinigame")) {
-                handleMinigame(event);
+            event.getWhoClicked().closeInventory();
+            if (getNBT(event.getCurrentItem(), "Type").equals("Minigame")) {
+                handleMinigame(event, getNBT(event.getCurrentItem(), "Action"));
             }
-            if (getStatus(firstItem).equals("selectSettings")) {
-                handleSettings(event);
+            if (getNBT(event.getCurrentItem(), "Type").equals("Misc")) {
+                handleSettings(event, getNBT(event.getCurrentItem(), "Action"));
             }
         }
     }
 
-    private boolean hasNBTData(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return false;
-
+    private String getNBT(ItemStack item, String key) {
+        if (item == null) return "ItemIsNull";
         ItemMeta meta = item.getItemMeta();
-        NamespacedKey key = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), "IsMinigamePlugin");
-        if (meta == null) return false;
+        NamespacedKey nsKey = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), key);
+        if (meta == null) return "NoItemMeta";
         PersistentDataContainer data = meta.getPersistentDataContainer();
-        return "1".equals(data.get(key, PersistentDataType.STRING));
+        return data.get(nsKey, PersistentDataType.STRING);
     }
 
-    private String getStatus(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return "";
-        ItemMeta meta = item.getItemMeta();
-        NamespacedKey key = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), "IsMinigamePlugin");
-        if (meta == null) return "";
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        return data.get(key, PersistentDataType.STRING);
+    private boolean isMinigamePlugin(ItemStack item) {
+        String s = getNBT(item, "ItemMiniGame");
+        System.out.println(s);
+        System.out.println(item.getItemMeta().getDisplayName());
+        System.out.println(s != null && s.equals("true"));
+        return s != null && s.equals("true");
     }
 
-    private void handleMinigame(InventoryClickEvent event) {
+    private void handleMinigame(InventoryClickEvent event, String action) {
         for (Minigame minigame : Minigame.values()) {
-            if (event.getCurrentItem().getType() == minigame.getMaterial()) {
+            if (action.equals(minigame.getAction())) {
                 MinigameHandler.createMinigame(minigame.getNumber());
             }
         }
     }
 
-    private void handleSettings(InventoryClickEvent event) {
-        if (event.getCurrentItem() == null) return;
-        PersistentDataContainer data = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
-        NamespacedKey key = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), "State");
-        if (data.get(key, PersistentDataType.STRING).equals("addContestants")) {
-            
+    private void handleSettings(InventoryClickEvent event, String action) {
+        if (action.equals("selectSettings")) {
+            new SettingsWindow((Player)event.getWhoClicked(), "Settings");
         }
+
     }
 }

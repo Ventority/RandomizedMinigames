@@ -7,6 +7,6 @@ import java.util.List;
 
 public class GeneralSettings {
     public List<Player> contestants = new ArrayList<>();
-
+    public String keyword;
 
 }

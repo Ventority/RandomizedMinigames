@@ -12,51 +12,63 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.Objects;
+
 public abstract class BaseWindow {
-    private final Player p;
-    private final Inventory gui;
-    private String status;
+    protected final Player p;
+    protected final Inventory gui;
+    protected String status;
 
     public BaseWindow(Player p, String status) {
         this.p = p;
         gui = Bukkit.createInventory(p, 54, RandomizedMinigames.serverSettingsHandler.getServerName()
-                + ChatColor.RESET + ChatColor.DARK_GRAY + " " + status);
+                + ChatColor.RESET + ChatColor.DARK_GRAY + status);
         this.status = status;
     }
 
-    private void fillBorder() {
-        ItemStack stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-        ItemMeta meta = stack.getItemMeta();
-        meta.setDisplayName(" ");
+    protected void fillBorder() {
+        ItemStack stack;
         for (int i = 0; i < 9; i++) {
-            gui.setItem(i, new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1));
-            gui.getItem(i).setItemMeta(meta);
+            stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+            gui.setItem(i, stack);
+            setItemName(stack, " " + i);
         }
         for (int i = 1; i < 5; i++) {
-            gui.setItem(9 * i, new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1));
-            gui.getItem(9 * i).setItemMeta(meta);
-            gui.setItem(8 + 9 * i, new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1));
-            gui.getItem(8 + 9 * i).setItemMeta(meta);
+            stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+            gui.setItem(9 * i, stack);
+            setItemName(stack, " " + 9 * i);
+            stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+            gui.setItem(8 + 9 * i, stack);
+            setItemName(stack, " " + 8 + 9 * i);
         }
         for (int i = 0; i < 9; i++) {
-            gui.setItem(i + 5 * 9, new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1));
-            gui.getItem(i + 5 * 9).setItemMeta(meta);
+            stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+            gui.setItem(i + 5 * 9, stack);
+            setItemName(stack, " " + i + 5 * 9);
         }
     }
 
-    public abstract void fillGUI();
+    protected abstract void fillGUI();
 
-    public void buildWindow() {
+    protected void buildWindow() {
         fillBorder();
         fillGUI();
+        addNBT(Objects.requireNonNull(gui.getItem(0)), "ItemMiniGame", "true");
         p.openInventory(gui);
     }
 
-    public ItemMeta addNBT(ItemMeta meta, String key, String value) {
-        NamespacedKey namespacedKey = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), key);
+    protected void addNBT(ItemStack item, String key, String value) {
+        ItemMeta meta = item.getItemMeta();
+        NamespacedKey key1 = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), key);
+        if (meta == null) return;
         PersistentDataContainer data = meta.getPersistentDataContainer();
-        data.set(namespacedKey, PersistentDataType.STRING, value);
-        return meta;
+        data.set(key1, PersistentDataType.STRING, value);
+    }
+
+    protected void setItemName(ItemStack item, String name) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        meta.setDisplayName(name);
     }
 
     public Inventory getGUI() {

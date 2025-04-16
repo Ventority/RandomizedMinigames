@@ -2,6 +2,7 @@ package de.ventority.randomizedminigames.Minigames;
 
 import de.ventority.randomizedminigames.GUI.GamesScoreboardManager;
 import de.ventority.randomizedminigames.MinigameHandler;
+import de.ventority.randomizedminigames.misc.PlayerBackup;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -14,19 +15,22 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class ForceItemBattle implements MinigameBase, Listener {
-    private final HashMap<Player, ItemStack> currentItems;
-    private final HashMap<Player, Integer> currentScores;
-    private final HashMap<Player, BossBar> itemDisplays;
+    protected final HashMap<Player, ItemStack> currentItems;
+    protected final HashMap<Player, Integer> currentScores;
+    protected final HashMap<Player, BossBar> itemDisplays;
     private final int id;
     private GamesScoreboardManager scoreboardManager;
     private final List<Player> contestants;
+    private final HashMap<Player, PlayerBackup> backups;
 
 
     public ForceItemBattle(List<Player> players) {
@@ -34,6 +38,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
         currentItems = new HashMap<>();
         currentScores = new HashMap<>();
         itemDisplays = new HashMap<>();
+        backups = new HashMap<>();
         contestants = players;
         for (Player player : players) {
             currentItems.put(player, null);
@@ -41,10 +46,10 @@ public class ForceItemBattle implements MinigameBase, Listener {
             BossBar bar = Bukkit.createBossBar("Hallo", BarColor.PURPLE, BarStyle.SOLID);
             bar.addPlayer(player);
             bar.setVisible(true);
-            bar.setTitle("Das ist ein Test");
             itemDisplays.put(player, bar);
             System.out.println(itemDisplays.get(player).getTitle());
             updatePlayerItem(player);
+            backups.put(player, new PlayerBackup(player.getInventory().getContents(), player.getInventory().getArmorContents(), player.getExp(), player.getLocation()));
         }
         scoreboardManager = new GamesScoreboardManager(players, getName());
     }
@@ -60,21 +65,6 @@ public class ForceItemBattle implements MinigameBase, Listener {
     }
 
     @Override
-    public int getPlayerIntervals() {
-        return 0;
-    }
-
-    @Override
-    public int getMinPlayers() {
-        return 2;
-    }
-
-    @Override
-    public int getMaxPlayers() {
-        return -1;
-    }
-
-    @Override
     public ItemStack getSymbol() {
         return new ItemStack(Material.DIAMOND_SWORD, 1);
     }
@@ -84,7 +74,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
 
     }
 
-    private ItemStack getRandomItem() {
+    protected ItemStack getRandomItem() {
         Material m;
         do {
             int i = new Random().nextInt(0, Material.values().length);
@@ -93,7 +83,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
         return new ItemStack(m);
     }
 
-    private void checkItem(Player p, ItemStack i) {
+    protected void checkItem(Player p, ItemStack i) {
         if (i == null) return;
         if (currentItems.get(p).getType() == i.getType()) {
             currentScores.replace(p, currentScores.get(p) + 1);
@@ -105,7 +95,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
         }
     }
 
-    private void updatePlayerItem(Player player) {
+    protected void updatePlayerItem(Player player) {
         currentItems.replace(player, getRandomItem());
         String key = currentItems.get(player).getType().getTranslationKey();
         String displayName = key.replace("block.minecraft.", "")
@@ -130,7 +120,8 @@ public class ForceItemBattle implements MinigameBase, Listener {
             if (player != winner) {
                 player.teleport(winner);
                 player.setGameMode(GameMode.SPECTATOR);
-                
+                player.sendTitle(winner.getDisplayName() + " hat gewonnen!", "Die Player werden jetzt zurückgesetzt.", 10, 70, 20);
+                restorePlayer(player);
             }
         }
         for (Player p : itemDisplays.keySet()) {
@@ -141,11 +132,22 @@ public class ForceItemBattle implements MinigameBase, Listener {
 
         scoreboardManager.removeScoreboard();
         scoreboardManager = null;
-
-        for (Player player : contestants) {
-            player.sendTitle(winner.getDisplayName() + " hat gewonnen!", "Die Player werden jetzt zurückgesetzt.", 10, 70, 20);
-        }
         MinigameHandler.deleteGame(this);
+    }
+
+    private void removePlayer(Player p) {
+        itemDisplays.get(p).setVisible(false);
+        itemDisplays.get(p).removePlayer(p);
+        scoreboardManager.getScoreboard().getPlayers().remove(p);
+    }
+
+    private void restorePlayer(Player p) {
+        PlayerBackup backup = backups.get(p);
+        p.teleport(backup.getLocation());
+        p.setExp(backup.getExp());
+        p.getInventory().clear();
+        p.getInventory().setContents(backup.getInventory());
+        p.getInventory().setArmorContents(backup.getArmor());
     }
 
     @EventHandler
@@ -166,5 +168,12 @@ public class ForceItemBattle implements MinigameBase, Listener {
         Player p = (Player)e.getWhoClicked();
         if (currentItems.containsKey(p))
             checkItem(p, e.getCurrentItem());
+    }
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent e) {
+        if (contestants.contains(e.getPlayer())) {
+            removePlayer(e.getPlayer());
+            restorePlayer(e.getPlayer());
+        }
     }
 }

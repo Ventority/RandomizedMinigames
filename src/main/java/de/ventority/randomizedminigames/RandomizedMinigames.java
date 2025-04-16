@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RandomizedMinigames extends JavaPlugin {
     public static final ServerSettingsHandler serverSettingsHandler = new ServerSettingsHandler();
+    public static String keyword = "";
     @Override
     public void onEnable() {
         init();
