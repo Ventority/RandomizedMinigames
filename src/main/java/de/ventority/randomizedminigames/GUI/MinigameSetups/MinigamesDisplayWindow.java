@@ -1,42 +1,29 @@
-package de.ventority.randomizedminigames.GUI;
+package de.ventority.randomizedminigames.GUI.MinigameSetups;
 
+import de.ventority.randomizedminigames.GUI.BaseWindow;
 import de.ventority.randomizedminigames.Minigames.Minigame;
-import de.ventority.randomizedminigames.RandomizedMinigames;
-import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
-public class MinigamesDisplayWindow extends BaseWindow{
+public class MinigamesDisplayWindow extends BaseWindow {
 
     public MinigamesDisplayWindow(Player p, String status) {
         super(p, status);
-    }
-
-    public void buildWindow() {
-        fillBorder();
-        fillGUI();
-        p.openInventory(gui);
     }
 
     @Override
     protected void fillGUI() {
         for (Minigame minigame : Minigame.values()) {
             ItemStack item = new ItemStack(minigame.getMaterial(), 1);
-            ItemMeta meta = item.getItemMeta();
             setItemName(item, minigame.getName());
-            addNBT(item, "Type", "Minigame");
-            addNBT(item, "Action", minigame.getAction());
-            item.setItemMeta(meta);
-            gui.addItem(item);
+            addNBT(item, "Type", "MinigameSelect");
+            addNBT(item, "Action", "openMinigameSetup");
+            addNBT(item, "selectedMinigame", Integer.toString(minigame.getNumber()));
+            addItemToGUI(item);
         }
-        addSettings();
+        //addSettings();
     }
 
     private void addSettings() {
@@ -46,6 +33,6 @@ public class MinigamesDisplayWindow extends BaseWindow{
         addNBT(settings, "Type", "Misc");
         addNBT(settings, "Action", "selectSettings");
         settings.setItemMeta(settingsMeta);
-        gui.setItem(45, settings);
+        addItemToGUI(45, settings);
     }
 }

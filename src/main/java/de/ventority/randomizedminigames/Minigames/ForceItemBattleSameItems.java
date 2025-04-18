@@ -10,8 +10,8 @@ public class ForceItemBattleSameItems extends ForceItemBattle {
     private  List<ItemStack> items;
 
 
-    public ForceItemBattleSameItems(List<Player> players) {
-        super(players);
+    public ForceItemBattleSameItems(List<Player> players, Player owner) {
+        super(players, owner);
     }
 
     @Override

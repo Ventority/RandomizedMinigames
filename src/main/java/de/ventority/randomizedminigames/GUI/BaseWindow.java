@@ -22,7 +22,7 @@ public abstract class BaseWindow {
     public BaseWindow(Player p, String status) {
         this.p = p;
         gui = Bukkit.createInventory(p, 54, RandomizedMinigames.serverSettingsHandler.getServerName()
-                + ChatColor.RESET + ChatColor.DARK_GRAY + status);
+                + ChatColor.RESET + ChatColor.DARK_GRAY);
         this.status = status;
     }
 
@@ -30,27 +30,27 @@ public abstract class BaseWindow {
         ItemStack stack;
         for (int i = 0; i < 9; i++) {
             stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-            gui.setItem(i, stack);
-            setItemName(stack, " " + i);
+            setItemName(stack, " ");
+            addItemToGUI(i, stack);
         }
         for (int i = 1; i < 5; i++) {
             stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-            gui.setItem(9 * i, stack);
-            setItemName(stack, " " + 9 * i);
+            setItemName(stack, " ");
+            addItemToGUI(9 * i, stack);
             stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-            gui.setItem(8 + 9 * i, stack);
-            setItemName(stack, " " + 8 + 9 * i);
+            setItemName(stack, " ");
+            addItemToGUI(8 + 9 * i, stack);
         }
         for (int i = 0; i < 9; i++) {
             stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-            gui.setItem(i + 5 * 9, stack);
-            setItemName(stack, " " + i + 5 * 9);
+            setItemName(stack, " ");
+            addItemToGUI(i + 5 * 9, stack);
         }
     }
 
     protected abstract void fillGUI();
 
-    protected void buildWindow() {
+    public void buildWindow() {
         fillBorder();
         fillGUI();
         addNBT(Objects.requireNonNull(gui.getItem(0)), "ItemMiniGame", "true");
@@ -63,12 +63,24 @@ public abstract class BaseWindow {
         if (meta == null) return;
         PersistentDataContainer data = meta.getPersistentDataContainer();
         data.set(key1, PersistentDataType.STRING, value);
+        item.setItemMeta(meta);
     }
 
     protected void setItemName(ItemStack item, String name) {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
         meta.setDisplayName(name);
+        item.setItemMeta(meta);
+    }
+
+    protected void addItemToGUI(int index, ItemStack item) {
+        addNBT(item, "ItemMiniGame", "true");
+        gui.setItem(index, item);
+    }
+
+    protected void addItemToGUI(ItemStack item) {
+        addNBT(item, "ItemMiniGame", "true");
+        gui.addItem(item);
     }
 
     public Inventory getGUI() {

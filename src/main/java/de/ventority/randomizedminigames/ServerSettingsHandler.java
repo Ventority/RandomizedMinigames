@@ -33,4 +33,6 @@ public class ServerSettingsHandler {
     public Plugin getPlugin() {
         return plugin;
     }
+
+    public String keyword;
 }

@@ -1,4 +1,4 @@
-package de.ventority.randomizedminigames.GUI;
+package de.ventority.randomizedminigames.GUI.InGame;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
