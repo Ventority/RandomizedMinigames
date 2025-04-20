@@ -55,7 +55,7 @@
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
-I got inspired by a streamer and youtuber who plays these kinds of Minigames (BastiGHG)
+I got inspired by a streamer and youtuber who plays these kinds of Minigames (BastiGHG). The plugin aims to bring many of these games to his audience and maybe some other people who are interested. There are multiple in-game GUIs that are used for various actions including each part of the setup. 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -64,9 +64,8 @@ I got inspired by a streamer and youtuber who plays these kinds of Minigames (Ba
 ### Installation
 As every Spigot Plugin
 1. Download the newest .jar file in the Releases-Tab
-2. Download LuckPerms
-3. Place both .jar files inside your Spigot-Server's plugins-folder
-4. Enjoy
+2. Place the .jar file inside your Spigot-Server's plugins-folder
+3. Enjoy
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -75,16 +74,16 @@ As every Spigot Plugin
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-`/prefix` - Opens a GUI of all available Colors the Player can choose from.<br>
-`/prefix add <Name> <Hex Color> <Item>`- This Command adds the color specified using the hex color code with a given name and an assigned Item that's shown in the GUI.<br>
-`/prefix remove <Name>`- Use this one to remove the color specified using the given name.
+`/minigames` - Opens a GUI of all available Minigames.<br>
+`/minigames killall`- Kills all minigames currently running, will be removed in the future since it shouldn't be necessary<br>
 
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Fixing Permission Checks
-- [ ] (Re-)adding fade option so prefixes look even cooler 
+- [ ] Fully implementing Force-Item-Battle Team variant
+- [ ] Add another minigame, not sure which atm
+- [ ] Make the GUI easier to work with
 - [ ] Adding usefull JavaDocs
 - [ ] probably other stuff I currently dont think about. 
 
@@ -113,7 +112,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the GNU GPLv3 License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See `LICENSE.md` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
