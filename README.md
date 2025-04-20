@@ -13,7 +13,7 @@
 <h3 align="center">Randomized Minigames</h3>
 
   <p align="center">
-    This spigot plugin adds a couple of Minigames all based on some sort of randomization. Currently working are two different types of Force Item Battles, a type of minigame where each player has to aquire an item faster than the others.
+    This spigot plugin adds a couple of Minigames to Minecraft all based on some sort of randomization. Currently working are two different types of Force Item Battles, a type of minigame where each player has to aquire an item faster than the others.
     <br />
     <a><strong>Explore the docs »</strong> <italic>There, sadly, are no docs yet.</italic></a>
     <br />
