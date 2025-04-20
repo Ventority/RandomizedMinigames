@@ -10,18 +10,17 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-<h3 align="center">LPrefixor</h3>
+<h3 align="center">Randomized Minigames</h3>
 
   <p align="center">
-    This small Spigot Plugin was made by me a couple of years ago for an older Minecraft-Version. I recently found it again, started porting it to 1.21 and decided to upload 
-    it to Github as a small memory for myself. I think I won't put much work into it as soon as i finished the TODOs, so dont expect anything great.
+    This spigot plugin adds a couple of Minigames all based on some sort of randomization. Currently working are two different types of Force Item Battles, a type of minigame where each player has to aquire an item faster than the others.
     <br />
     <a><strong>Explore the docs »</strong> <italic>There, sadly, are no docs yet.</italic></a>
     <br />
     <br />
-    <a href="https://github.com/ventority/LPrefixor/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/ventority/RandomizedMinigames/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/ventority/LPrefixor/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/ventority/RandomizedMinigames/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -56,10 +55,7 @@
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
-The Plugin is based on LuckPerms capabillity to add custom prefixes. It basically just changes the ChatColor the prefix gets assigned.
-To do that,  the command `/prefix` is added which allows you to change the color of the prefix a player has. More on the usage down below. Permissions for each color 
-are created when a new color is added and can be given or taken by admins <italic>(This functionality is currently not working, the fix should be 
-fairly easy tho. I will push an updated version soon). </italic> Keep in mind that Vanilla Minecfaft doesn't show prefixes at all so you will need tomething like TAB thst displays them in the Tab list and the chat. LPrefixor also doesn't sort the groups so you will have to do that within LuckPerm yourself if you want an Admin at the top and a player at the bottom.
+I got inspired by a streamer and youtuber who plays these kinds of Minigames (BastiGHG)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
