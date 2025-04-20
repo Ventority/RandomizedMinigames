@@ -3,6 +3,7 @@ package de.ventority.randomizedminigames.GUI;
 import de.ventority.randomizedminigames.GUI.MinigameSetups.MinigameSetup;
 import de.ventority.randomizedminigames.GUI.MinigameSetups.MinigamesDisplayWindow;
 import de.ventority.randomizedminigames.GUI.MinigameSetups.PlayerSelection;
+import de.ventority.randomizedminigames.GUI.MinigameSetups.SetLimit;
 import de.ventority.randomizedminigames.SelectMinigame;
 import de.ventority.randomizedminigames.misc.DataInputHandler;
 import de.ventority.randomizedminigames.misc.MinigameHandler;
@@ -24,14 +25,14 @@ import org.bukkit.persistence.PersistentDataType;
 public class GUIClickEvent implements Listener {
     @EventHandler
     public void onClickEvent(InventoryClickEvent event) {
-        event.setCancelled(true);
         Inventory inventory = event.getClickedInventory();
         if (event.getCurrentItem() == null) return;
-        if (event.getCurrentItem().getType() == Material.BLACK_STAINED_GLASS) return;
         if (inventory == null) return;
         if (inventory.getItem(0) == null) return;
         if (isMinigamePlugin(inventory.getItem(0))) {
-            event.getWhoClicked().closeInventory();
+            event.setCancelled(true);
+            if (getNBT(event.getCurrentItem(), "Action").equals("none"))
+                return;
             if (getNBT(event.getCurrentItem(), "Type").equals("MinigameSelect")) {
                 handleMinigame(event, getNBT(event.getCurrentItem(), "Action"));
             }
@@ -58,6 +59,7 @@ public class GUIClickEvent implements Listener {
     }
 
     private void handleMinigame(InventoryClickEvent event, String action) {
+        event.getWhoClicked().closeInventory();
         if (action.equals("openMinigameSetup")) {
             RandomizedMinigames.dataInputHandler.setSelectedMinigame((Player) event.getWhoClicked(), Integer.parseInt(getNBT(event.getCurrentItem(), "selectedMinigame")));
             new MinigameSetup((Player) event.getWhoClicked(), action).buildWindow();
@@ -68,6 +70,7 @@ public class GUIClickEvent implements Listener {
     }
 
     private void handleSettings(InventoryClickEvent event, String action) {
+        event.getWhoClicked().closeInventory();
         if (action.equals("selectSettings")) {
             new SettingsWindow((Player)event.getWhoClicked(), "Settings");
         }
@@ -76,10 +79,12 @@ public class GUIClickEvent implements Listener {
 
     private void handleMinigameSetup(InventoryClickEvent event, String action) {
         if (action.equals("homeMenu")) {
-            new MinigamesDisplayWindow((Player) event.getWhoClicked(), "Minigame").buildWindow();
+            event.getWhoClicked().closeInventory();
+            new MinigameSetup((Player) event.getWhoClicked(), "Minigame").buildWindow();
         }
+
+        DataInputHandler data = RandomizedMinigames.dataInputHandler;
         if (action.equals("clickedPlayer")) {
-            DataInputHandler data = RandomizedMinigames.dataInputHandler;
             Player toWork = Bukkit.getPlayer(getNBT(event.getCurrentItem(), "Player"));
             if (data.getSelectedPlayers((Player) event.getWhoClicked()).contains(toWork)) {
                 data.removePlayersFromSelection((Player) event.getWhoClicked(), toWork);
@@ -88,10 +93,34 @@ public class GUIClickEvent implements Listener {
             }
             new PlayerSelection((Player)event.getWhoClicked(), getNBT(event.getCurrentItem(), "selectedMinigame")).buildWindow();
         }
+
+        if (action.equals("subFromLimit")) {
+            data.subFromSelectedLimit((Player) event.getWhoClicked());
+            new SetLimit((Player)event.getWhoClicked(), getNBT(event.getCurrentItem(), "selectedMinigame")).buildWindow();
+        }
+
+        if (action.equals("addToLimit")) {
+            data.addToSelectedLimit((Player) event.getWhoClicked());
+            new SetLimit((Player)event.getWhoClicked(), getNBT(event.getCurrentItem(), "selectedMinigame")).buildWindow();
+        }
+
         if (action.equals("startPlayerSelection")) {
+            event.getWhoClicked().closeInventory();
             new PlayerSelection((Player)event.getWhoClicked(), getNBT(event.getCurrentItem(), "selectedMinigame")).buildWindow();
         }
+
+        if (action.equals("startLimitSelection")) {
+            event.getWhoClicked().closeInventory();
+            new SetLimit((Player)event.getWhoClicked(), getNBT(event.getCurrentItem(), "selectedMinigame")).buildWindow();
+        }
+
+        if (action.equals("switchScoreboard")) {
+            data.switchScoreboard();
+            new MinigameSetup((Player) event.getWhoClicked(), "Minigame").buildWindow();
+        }
+
         if (action.equals("startGame")) {
+            event.getWhoClicked().closeInventory();
             MinigameHandler.createMinigame(RandomizedMinigames.dataInputHandler.getSelectedMinigame((Player) event.getWhoClicked()), (Player) event.getWhoClicked());
         }
     }

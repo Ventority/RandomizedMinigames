@@ -15,20 +15,20 @@ public class ForceItemBattleSameItems extends ForceItemBattle {
     }
 
     @Override
-    protected void updatePlayerItem(Player player) {
+    protected void updatePlayerItem(Player player, ItemStack item) {
         if (this.items == null || this.items.isEmpty()) {
             items = new ArrayList<>();
-            items.add(getRandomItem());
+            items.add(item);
         }
         if (currentScores.get(player) == items.size()) {
-            items.add(getRandomItem());
+            items.add(item);
         }
         currentItems.replace(player, items.get(currentScores.get(player)));
         String key = currentItems.get(player).getType().getTranslationKey();
         itemDisplays.get(player).setTitle(key.replace("block.minecraft.", "")
                                                 .replace("_", " ")
                                                 .replace("item.minecraft.", ""));
-        for (ItemStack item : player.getInventory().getContents())
-            checkItem(player, item);
+        for (ItemStack i : player.getInventory().getContents())
+            checkItem(player, i);
     }
 }

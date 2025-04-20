@@ -30,20 +30,24 @@ public abstract class BaseWindow {
         ItemStack stack;
         for (int i = 0; i < 9; i++) {
             stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+            addNBT(stack, "Action", "none");
             setItemName(stack, " ");
             addItemToGUI(i, stack);
         }
         for (int i = 1; i < 5; i++) {
             stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+            addNBT(stack, "Action", "none");
             setItemName(stack, " ");
             addItemToGUI(9 * i, stack);
             stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+            addNBT(stack, "Action", "none");
             setItemName(stack, " ");
             addItemToGUI(8 + 9 * i, stack);
         }
         for (int i = 0; i < 9; i++) {
             stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
             setItemName(stack, " ");
+            addNBT(stack, "Action", "none");
             addItemToGUI(i + 5 * 9, stack);
         }
     }

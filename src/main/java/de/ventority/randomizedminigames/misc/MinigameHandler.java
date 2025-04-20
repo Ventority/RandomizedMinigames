@@ -24,6 +24,13 @@ public class MinigameHandler {
         getServer().getPluginManager().registerEvents(minigames.getFirst(), RandomizedMinigames.serverSettingsHandler.getPlugin());
     }
 
+    public static List<MinigameBase> getMinigames() {
+        if (minigames.isEmpty()) {
+            return null;
+        }
+        return minigames;
+    }
+
     public static void deleteGame(MinigameBase minigame) {
         minigames.remove(minigame);
     }
