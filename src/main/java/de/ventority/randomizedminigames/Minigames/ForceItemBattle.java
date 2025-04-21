@@ -1,9 +1,9 @@
 package de.ventority.randomizedminigames.Minigames;
 
 import de.ventority.randomizedminigames.GUI.InGame.GamesScoreboardManager;
-import de.ventority.randomizedminigames.RandomizedMinigames;
 import de.ventority.randomizedminigames.misc.MinigameHandler;
 import de.ventority.randomizedminigames.misc.PlayerBackup;
+import de.ventority.randomizedminigames.misc.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -20,11 +20,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class ForceItemBattle implements MinigameBase, Listener {
     protected final HashMap<Player, ItemStack> currentItems;
@@ -35,7 +31,8 @@ public class ForceItemBattle implements MinigameBase, Listener {
     protected final List<Player> contestants;
     private final HashMap<Player, PlayerBackup> backups;
     private final Player owner;
-    protected final int limit;
+    protected Settings settings;
+
     private final List<Material> SURVIVAL_ITEMS = Arrays.stream(Material.values())
             .filter(Material::isItem)
             .filter(m -> {
@@ -62,7 +59,8 @@ public class ForceItemBattle implements MinigameBase, Listener {
 
 
     public ForceItemBattle(List<Player> players, Player owner) {
-        limit = RandomizedMinigames.dataInputHandler.getSelectedLimit(owner);
+        settings = MinigameHandler.getSettings(owner);
+
         id = new Random().nextInt(1024);
         currentItems = new HashMap<>();
         currentScores = new HashMap<>();
@@ -70,19 +68,23 @@ public class ForceItemBattle implements MinigameBase, Listener {
         backups = new HashMap<>();
         contestants = players;
         this.owner = owner;
-        if (RandomizedMinigames.dataInputHandler.getScoreboardStatus())
+        if (MinigameHandler.getSettings(owner).getScoreboardStatus())
             scoreboardManager = new GamesScoreboardManager(players, getName());
         for (Player player : players) {
             currentItems.put(player, null);
             currentScores.put(player, 0);
-            BossBar bar = Bukkit.createBossBar("Hallo", BarColor.PURPLE, BarStyle.SOLID);
+
+            BossBar bar = Bukkit.createBossBar("Null", BarColor.PURPLE, BarStyle.SOLID);
             bar.addPlayer(player);
             bar.setVisible(true);
             itemDisplays.put(player, bar);
+
             updatePlayerItem(player, getRandomItem());
             backups.put(player, new PlayerBackup(player.getInventory().getContents(), player.getInventory().getArmorContents(), player.getExp(), player.getLocation()));
+
             ItemStack skip = new ItemStack(Material.BARRIER, 3);
             ItemMeta meta = skip.getItemMeta();
+            assert meta != null;
             meta.setDisplayName(ChatColor.RED + "Skip");
             skip.setItemMeta(meta);
             player.getInventory().addItem(skip);
@@ -117,7 +119,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
         if (i == null) return;
         if (currentItems.get(p).getType() == i.getType()) {
             currentScores.replace(p, currentScores.get(p) + 1);
-            if (RandomizedMinigames.dataInputHandler.getScoreboardStatus())
+            if (settings.getScoreboardStatus())
                 scoreboardManager.setPunkte(p.getName(), scoreboardManager.getPunkte(p.getName()) + 1);
             if (checkWin(p)) {
                 stopGame(p);
@@ -140,7 +142,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
     }
 
     protected boolean checkWin(Player p) {
-        return currentScores.get(p) == limit;
+        return currentScores.get(p) == settings.getSelectedLimit();
     }
 
     protected void showEndMessage(Player winner) {
@@ -151,8 +153,8 @@ public class ForceItemBattle implements MinigameBase, Listener {
                 player.sendTitle(winner.getDisplayName() + " won!", "Resetting players...", 10, 70, 20);
                 //restorePlayer(player);
             }
-            if (RandomizedMinigames.dataInputHandler.getScoreboardStatus())
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+            if (settings.getScoreboardStatus())
+                player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
         }
     }
 
@@ -163,35 +165,35 @@ public class ForceItemBattle implements MinigameBase, Listener {
             itemDisplays.get(p).removePlayer(p);
         }
         itemDisplays.clear();
-        if (RandomizedMinigames.dataInputHandler.getScoreboardStatus()) {
+        if (settings.getScoreboardStatus()) {
             scoreboardManager.removeScoreboard();
             scoreboardManager = null;
         }
-        RandomizedMinigames.dataInputHandler.removeSelectionEntry(owner);
+        MinigameHandler.resetSettings(owner);
         MinigameHandler.deleteGame(this);
     }
 
     private void removePlayer(Player p) {
         itemDisplays.get(p).setVisible(false);
         itemDisplays.get(p).removePlayer(p);
-        if (RandomizedMinigames.dataInputHandler.getScoreboardStatus())
-            p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        if (settings.getScoreboardStatus())
+            p.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
         if (contestants.isEmpty())
             stopGame(owner);
     }
 
     public void killGame() {
         for (Player player : contestants) {
-            if (RandomizedMinigames.dataInputHandler.getScoreboardStatus())
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+            if (settings.getScoreboardStatus())
+                player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
         }
         itemDisplays.clear();
 
-        if (RandomizedMinigames.dataInputHandler.getScoreboardStatus()) {
+        if (settings.getScoreboardStatus()) {
             scoreboardManager.removeScoreboard();
             scoreboardManager = null;
         }
-        RandomizedMinigames.dataInputHandler.removeSelectionEntry(owner);
+        MinigameHandler.resetSettings(owner);
         MinigameHandler.deleteGame(this);
     }
 

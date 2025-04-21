@@ -6,8 +6,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class SettingsWindow extends BaseWindow{
 
-    public SettingsWindow(Player p, String status) {
-        super(p, status);
+    public SettingsWindow(Player p) {
+        super(p);
     }
 
     @Override

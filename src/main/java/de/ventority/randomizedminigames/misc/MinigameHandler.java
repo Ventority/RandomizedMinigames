@@ -7,6 +7,7 @@ import de.ventority.randomizedminigames.RandomizedMinigames;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -15,8 +16,10 @@ import static org.bukkit.Bukkit.getServer;
 public class MinigameHandler {
     private static final List<MinigameBase> minigames = new ArrayList<>();
 
+    private static final HashMap<Player, Settings> settings = new HashMap<>();
+
     public static void createMinigame(int gameNumber, Player caller) {
-        List<Player> players = RandomizedMinigames.dataInputHandler.getSelectedPlayers(caller);
+        List<Player> players = settings.get(caller).getSelectedPlayers();
         switch (gameNumber) {
             case 0: minigames.add(new ForceItemBattle(players, caller)); break;
             case 1: minigames.add(new ForceItemBattleSameItems(players, caller)); break;
@@ -46,5 +49,15 @@ public class MinigameHandler {
     public static void killAll() {
         for (MinigameBase minigame : minigames)
             minigame.killGame();
+    }
+
+    public static Settings getSettings(Player player) {
+        if (!settings.containsKey(player))
+            settings.put(player, new Settings(player));
+        return settings.get(player);
+    }
+
+    public static void resetSettings(Player player) {
+        settings.put(player, new Settings(player));
     }
 }

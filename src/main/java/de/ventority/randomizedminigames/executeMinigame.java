@@ -5,7 +5,7 @@ import de.ventority.randomizedminigames.misc.MinigameHandler;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
-public class SelectMinigame implements CommandExecutor {
+public class executeMinigame implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if (!(commandSender instanceof Player)) {
@@ -20,11 +20,11 @@ public class SelectMinigame implements CommandExecutor {
             return true;
         }
 
-        if (MinigameHandler.getOccupiedPlayers().contains(player)) {
+        if (MinigameHandler.getOccupiedPlayers().contains(player))
             return true;
-        }
 
-        new MinigamesDisplayWindow(player, "MinigameSelect").buildWindow();
+        MinigameHandler.resetSettings(player);
+        new MinigamesDisplayWindow(player).buildWindow();
         return true;
     }
 

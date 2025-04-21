@@ -2,9 +2,7 @@ package de.ventority.randomizedminigames;
 
 import de.ventority.randomizedminigames.GUI.GUIClickEvent;
 import de.ventority.randomizedminigames.Minigames.ForceItemBattle;
-import de.ventority.randomizedminigames.Minigames.Minigame;
 import de.ventority.randomizedminigames.Minigames.MinigameBase;
-import de.ventority.randomizedminigames.misc.DataInputHandler;
 import de.ventority.randomizedminigames.misc.MinigameHandler;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -17,14 +15,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RandomizedMinigames extends JavaPlugin implements Listener {
     public static final ServerSettingsHandler serverSettingsHandler = new ServerSettingsHandler();
-    public static DataInputHandler dataInputHandler = new DataInputHandler();
 
     @Override
     public void onEnable() {
         init();
         getServer().getPluginManager().registerEvents(new GUIClickEvent(), this);
         getServer().getPluginManager().registerEvents(this, this);
-        this.getCommand("minigames").setExecutor(new SelectMinigame());
+        this.getCommand("minigames").setExecutor(new executeMinigame());
         for (World world : Bukkit.getWorlds()) {
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         }

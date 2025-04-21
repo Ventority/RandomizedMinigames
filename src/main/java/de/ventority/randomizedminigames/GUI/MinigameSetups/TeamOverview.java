@@ -5,8 +5,8 @@ import org.bukkit.entity.Player;
 
 public class TeamOverview extends BaseWindow {
 
-    public TeamOverview(Player p, String status) {
-        super(p, status);
+    public TeamOverview(Player p) {
+        super(p);
     }
 
     @Override

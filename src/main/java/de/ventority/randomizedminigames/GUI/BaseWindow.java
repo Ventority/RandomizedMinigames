@@ -17,13 +17,11 @@ import java.util.Objects;
 public abstract class BaseWindow {
     protected final Player p;
     protected final Inventory gui;
-    protected String status;
 
-    public BaseWindow(Player p, String status) {
+    public BaseWindow(Player p) {
         this.p = p;
         gui = Bukkit.createInventory(p, 54, RandomizedMinigames.serverSettingsHandler.getServerName()
                 + ChatColor.RESET + ChatColor.DARK_GRAY);
-        this.status = status;
     }
 
     protected void fillBorder() {
@@ -95,7 +93,4 @@ public abstract class BaseWindow {
         return p;
     }
 
-    private String getStatus() {
-        return status;
-    }
 }

@@ -9,8 +9,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class MinigamesDisplayWindow extends BaseWindow {
 
-    public MinigamesDisplayWindow(Player p, String status) {
-        super(p, status);
+    public MinigamesDisplayWindow(Player p) {
+        super(p);
     }
 
     @Override
