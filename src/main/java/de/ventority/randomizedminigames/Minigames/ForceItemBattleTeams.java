@@ -35,7 +35,6 @@ public class ForceItemBattleTeams extends ForceItemBattle{
                 if (team.getPlayers().contains(player)) winningTeam = team;
             player.sendTitle(winningTeam.getColor() + winningTeam.getColor().name() + "Team " + ChatColor.RESET + " won!",
                     "Resetting players...", 10, 70, 20);
-            //restorePlayer(player);
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         }
     }

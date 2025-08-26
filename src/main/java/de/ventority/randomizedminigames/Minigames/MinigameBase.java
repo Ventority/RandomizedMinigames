@@ -13,4 +13,6 @@ public interface MinigameBase extends Listener {
     void addPlayers(List<Player> players);
     List<Player> getPlayers();
     void killGame();
+    void stopGame();
+    Player getOwner();
 }

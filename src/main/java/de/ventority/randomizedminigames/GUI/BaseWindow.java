@@ -93,4 +93,12 @@ public abstract class BaseWindow {
         return p;
     }
 
+    protected String getNBT(ItemStack item, String key) {
+        if (item == null) return "ItemIsNull";
+        ItemMeta meta = item.getItemMeta();
+        NamespacedKey nsKey = new NamespacedKey(RandomizedMinigames.serverSettingsHandler.getPlugin(), key);
+        if (meta == null) return "NoItemMeta";
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        return data.get(nsKey, PersistentDataType.STRING);
+    }
 }

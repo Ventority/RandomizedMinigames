@@ -4,7 +4,8 @@ import org.bukkit.Material;
 
 public enum Minigame {
     ForceItemBattle(Material.DIAMOND_SWORD, "Force Item Battle", 0, "startForceItem"),
-    ForceItemBattleSameItems(Material.NETHERITE_SWORD, "Force Item Battle (Same Items)", 1, "startForceItemSameItem"),;
+    ForceItemBattleSameItems(Material.NETHERITE_SWORD, "Force Item Battle (Same Items)", 1, "startForceItemSameItem");
+    //ForceItemBattleTeams(Material.GOLDEN_SWORD, "Force Item Battle (Teams)", 2, "startForceItemTeams"),;
 
     final Material material;
     final String name;

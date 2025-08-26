@@ -4,12 +4,10 @@ import de.ventority.randomizedminigames.Minigames.ForceItemBattle;
 import de.ventority.randomizedminigames.Minigames.ForceItemBattleSameItems;
 import de.ventority.randomizedminigames.Minigames.MinigameBase;
 import de.ventority.randomizedminigames.RandomizedMinigames;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 
 import static org.bukkit.Bukkit.getServer;
 

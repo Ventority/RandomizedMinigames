@@ -19,7 +19,7 @@ public class MinigamesDisplayWindow extends BaseWindow {
             ItemStack item = new ItemStack(minigame.getMaterial(), 1);
             setItemName(item, minigame.getName());
             addNBT(item, "Type", "MinigameSelect");
-            addNBT(item, "Action", "openMinigameSetup");
+            addNBT(item, "Action", minigame.getAction());
             addNBT(item, "selectedMinigame", Integer.toString(minigame.getNumber()));
             addItemToGUI(item);
         }

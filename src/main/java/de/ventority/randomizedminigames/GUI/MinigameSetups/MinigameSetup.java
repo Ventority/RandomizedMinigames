@@ -16,7 +16,6 @@ public class MinigameSetup extends BaseWindow {
 
     @Override
     protected void fillGUI() {
-        System.out.println("Hallo");
         ItemStack playerSelect = new ItemStack(Material.PLAYER_HEAD);
         addNBT(playerSelect, "Type", "MinigameSetup");
         addNBT(playerSelect, "Action", "startPlayerSelection");
@@ -42,6 +41,17 @@ public class MinigameSetup extends BaseWindow {
         setItemName(start, "Start");
         addItemToGUI(50, start);
 
+        ItemStack timer = new ItemStack(Material.CLOCK);
+        addNBT(timer, "Type", "MinigameSetup");
+        addNBT(timer, "Action", "startTimerSetup");
+        setItemName(timer, "Set Timer");
+        addItemToGUI(timer);
+
+        ItemStack enableTimer = new ItemStack(Material.TARGET);
+        addNBT(enableTimer, "Type", "MinigameSetup");
+        addNBT(enableTimer, "Action", "toggleTimer");
+        setItemName(enableTimer, "Timer: " + (playerSettings.isTimed ? (ChatColor.GREEN + "On") : ChatColor.RED + "Off"));
+        addItemToGUI(enableTimer);
 
         ItemStack back = new ItemStack(Material.ARROW);
         addNBT(back, "Type", "MinigameSelect");

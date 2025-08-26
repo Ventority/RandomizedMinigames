@@ -13,6 +13,9 @@ public class Settings {
     int selectedLimit = 10;
     List<Team> teams = new ArrayList<>();
     boolean showScoreboard = true;
+    private int selectedTeamCount = 2;
+    private int selectedTeamIndex = 0;
+    public int timerStop = 1800;
 
     public Settings(Player owner) {
         this.owner = owner;
@@ -31,7 +34,6 @@ public class Settings {
     }
 
     public void addPlayersToSelection(Player toAdd) {
-        System.out.println(toAdd.getName());
         selectedPlayers.add(toAdd);
     }
 
@@ -58,4 +60,29 @@ public class Settings {
     public void subFromSelectedLimit() {
         selectedLimit--;
     }
+
+    public void addTeamCount() {
+        if (selectedTeamCount < 6) {}
+            selectedTeamCount++;
+    }
+
+    public void subTeamCount() {
+        if (selectedTeamCount > 2)
+            selectedTeamCount--;
+    }
+
+    public int getTeamCount() {
+        return selectedTeamCount;
+    }
+
+    public void setSelectedTeamIndex(int selectedTeamIndex) {
+        this.selectedTeamIndex = selectedTeamIndex;
+    }
+
+    public int getSelectedTeamIndex() {
+        return selectedTeamIndex;
+    }
+
+    public boolean isTimed;
+
 }

@@ -19,6 +19,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import de.ventority.randomizedminigames.misc.Timer;
 
 import java.util.*;
 
@@ -32,6 +33,8 @@ public class ForceItemBattle implements MinigameBase, Listener {
     private final HashMap<Player, PlayerBackup> backups;
     private final Player owner;
     protected Settings settings;
+    private Timer timer;
+    private List<Player> disconnected = new ArrayList<>();
 
     private final List<Material> SURVIVAL_ITEMS = Arrays.stream(Material.values())
             .filter(Material::isItem)
@@ -53,13 +56,19 @@ public class ForceItemBattle implements MinigameBase, Listener {
                         !name.contains("END_GATEWAY") &&
                         !name.contains("NETHER_PORTAL") &&
                         !name.contains("POTTED_") &&
-                        !name.contains("MUSIC");
+                        !name.contains("MUSIC") &&
+                        !name.contains("AMETHYST_BUD") &&
+                        !name.contains("OXIDIZED") &&
+                        !name.contains("AMETHYST") &&
+                        !name.contains("PURPUR") &&
+                        !name.contains("EXPOSED");
             })
             .toList();
 
 
     public ForceItemBattle(List<Player> players, Player owner) {
         settings = MinigameHandler.getSettings(owner);
+        timer = new Timer(settings.timerStop, players, this, "");
 
         id = new Random().nextInt(1024);
         currentItems = new HashMap<>();
@@ -80,7 +89,8 @@ public class ForceItemBattle implements MinigameBase, Listener {
             itemDisplays.put(player, bar);
 
             updatePlayerItem(player, getRandomItem());
-            backups.put(player, new PlayerBackup(player.getInventory().getContents(), player.getInventory().getArmorContents(), player.getExp(), player.getLocation()));
+            backups.put(player, new PlayerBackup(player.getInventory().getContents(), player.getInventory().getArmorContents(), player.getExp(), player.getLocation(), player.getGameMode()));
+            player.getInventory().clear();
 
             ItemStack skip = new ItemStack(Material.BARRIER, 3);
             ItemMeta meta = skip.getItemMeta();
@@ -89,6 +99,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
             skip.setItemMeta(meta);
             player.getInventory().addItem(skip);
         }
+        timer.startCounter();
     }
 
     @Override
@@ -119,9 +130,12 @@ public class ForceItemBattle implements MinigameBase, Listener {
         if (i == null) return;
         if (currentItems.get(p).getType() == i.getType()) {
             currentScores.replace(p, currentScores.get(p) + 1);
+            p.sendMessage("Du hast " + i.getTranslationKey().replace("block.minecraft.", "")
+                    .replace("_", " ")
+                    .replace("item.minecraft.", "") + " gefunden!");
             if (settings.getScoreboardStatus())
                 scoreboardManager.setPunkte(p.getName(), scoreboardManager.getPunkte(p.getName()) + 1);
-            if (checkWin(p)) {
+            if (!settings.isTimed && checkWin(p)) {
                 stopGame(p);
                 return;
             }
@@ -150,32 +164,37 @@ public class ForceItemBattle implements MinigameBase, Listener {
             if (player != winner) {
                 player.teleport(winner);
                 player.setGameMode(GameMode.SPECTATOR);
-                player.sendTitle(winner.getDisplayName() + " won!", "Resetting players...", 10, 70, 20);
-                //restorePlayer(player);
+                player.sendTitle(winner.getDisplayName() + " won!", "Resetting game...", 10, 70, 20);
+            } else {
+                player.sendTitle("You won. Congratulations!", "Your score was: " + currentScores.get(winner), 10, 70, 20);
             }
             if (settings.getScoreboardStatus())
                 player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
         }
     }
-
+    public void stopGame() {
+        Map.Entry<Player, Integer> bestEntry = currentScores.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .orElse(null);
+        assert bestEntry != null;
+        stopGame(bestEntry.getKey());
+    }
     private void stopGame(Player winner) {
         showEndMessage(winner);
-        for (Player p : itemDisplays.keySet()) {
-            itemDisplays.get(p).setVisible(false);
-            itemDisplays.get(p).removePlayer(p);
-        }
-        itemDisplays.clear();
-        if (settings.getScoreboardStatus()) {
-            scoreboardManager.removeScoreboard();
-            scoreboardManager = null;
-        }
-        MinigameHandler.resetSettings(owner);
-        MinigameHandler.deleteGame(this);
+        timer.pauseCounter();
+        Timer t = new Timer(10, contestants, this, this::killGame, true, "Resetting game in: ");
+        t.startCounter();
     }
 
     private void removePlayer(Player p) {
-        itemDisplays.get(p).setVisible(false);
-        itemDisplays.get(p).removePlayer(p);
+        contestants.remove(p);
+        if (itemDisplays.get(p) != null) {
+            itemDisplays.get(p).setVisible(false);
+            itemDisplays.get(p).removePlayer(p);
+            itemDisplays.remove(p);
+        }
+
         if (settings.getScoreboardStatus())
             p.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
         if (contestants.isEmpty())
@@ -183,9 +202,12 @@ public class ForceItemBattle implements MinigameBase, Listener {
     }
 
     public void killGame() {
-        for (Player player : contestants) {
-            if (settings.getScoreboardStatus())
-                player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
+        for (Player p : contestants) {
+            restorePlayer(p);
+        }
+        for (Player p : itemDisplays.keySet()) {
+            itemDisplays.get(p).setVisible(false);
+            itemDisplays.get(p).removePlayer(p);
         }
         itemDisplays.clear();
 
@@ -193,6 +215,11 @@ public class ForceItemBattle implements MinigameBase, Listener {
             scoreboardManager.removeScoreboard();
             scoreboardManager = null;
         }
+
+        if (settings.getScoreboardStatus())
+            for (Player player : contestants)
+                player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
+        itemDisplays.clear();
         MinigameHandler.resetSettings(owner);
         MinigameHandler.deleteGame(this);
     }
@@ -204,6 +231,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
         p.getInventory().clear();
         p.getInventory().setContents(backup.getInventory());
         p.getInventory().setArmorContents(backup.getArmor());
+        p.setGameMode(backup.getGamemode());
     }
 
     public List<Player> getPlayers() {
@@ -214,6 +242,10 @@ public class ForceItemBattle implements MinigameBase, Listener {
         ItemStack curItem = currentItems.get(p);
         p.getInventory().addItem(curItem);
         checkItem(p, curItem);
+    }
+
+    public Player getOwner() {
+        return owner;
     }
 
     @EventHandler
@@ -239,8 +271,8 @@ public class ForceItemBattle implements MinigameBase, Listener {
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent e) {
         if (contestants.contains(e.getPlayer())) {
+            disconnected.add(e.getPlayer());
             removePlayer(e.getPlayer());
-            restorePlayer(e.getPlayer());
         }
     }
 }
