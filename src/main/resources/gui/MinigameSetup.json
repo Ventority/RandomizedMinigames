@@ -1,0 +1,69 @@
+{
+  "title": "Minigame Setup",
+  "rows": 6,
+  "items": [
+    {
+      "slot": -1,
+      "material": "PLAYER_HEAD",
+      "name": "Select Players",
+      "nbt": {
+        "Type": "MinigameSetup",
+        "Action": "startPlayerSelection"
+      }
+    },
+    {
+      "slot": -1,
+      "material": "BOOK",
+      "name": "Set win limit",
+      "nbt": {
+        "Type": "MinigameSetup",
+        "Action": "startLimitSelection"
+      }
+    },
+    {
+      "slot": -1,
+      "material": "EMERALD",
+      "name": "Scoreboard: %scoreboardState%",
+      "nbt": {
+        "Type": "MinigameSetup",
+        "Action": "switchScoreboard"
+      }
+    },
+    {
+      "slot": 50,
+      "material": "GREEN_DYE",
+      "name": "Start",
+      "nbt": {
+        "Type": "MinigameSetup",
+        "Action": "startGame"
+      }
+    },
+    {
+      "slot": -1,
+      "material": "CLOCK",
+      "name": "Set Timer",
+      "nbt": {
+        "Type": "MinigameSetup",
+        "Action": "startTimerSetup"
+      }
+    },
+    {
+      "slot": -1,
+      "material": "TARGET",
+      "name": "Timer: %timer%",
+      "nbt": {
+        "Type": "MinigameSetup",
+        "Action": "toggleTimer"
+      }
+    },
+    {
+      "slot": 49,
+      "material": "ARROW",
+      "name": "Back",
+      "nbt": {
+        "Type": "MinigameSelect",
+        "Action": "homeMenu"
+      }
+    }
+  ]
+}

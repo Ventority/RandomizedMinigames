@@ -1,7 +1,8 @@
 package de.ventority.randomizedminigames;
 
-import de.ventority.randomizedminigames.GUI.MinigameSetups.MinigamesDisplayWindow;
-import de.ventority.randomizedminigames.misc.MinigameHandler;
+import de.ventority.randomizedminigames.gui.windows.MinigamesDisplayWindow;
+import de.ventority.randomizedminigames.util.MinigameHandler;
+import de.ventority.randomizedminigames.util.WorldUtils;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
@@ -16,6 +17,13 @@ public class executeMinigame implements CommandExecutor {
         Player player = (Player) commandSender;
         if (args.length > 0 && args[0].equalsIgnoreCase("killall")) {
             player.sendMessage("Alle Minigame-Instanzen werden beendet!");
+            MinigameHandler.killAll();
+            return true;
+        }
+
+        if (args.length > 0 && args[0].equalsIgnoreCase("reset")) {
+            player.sendMessage("Resetting Server");
+            WorldUtils.resetDefaultWorlds();
             MinigameHandler.killAll();
             return true;
         }

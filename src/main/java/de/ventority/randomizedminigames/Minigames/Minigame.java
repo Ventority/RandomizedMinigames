@@ -4,7 +4,10 @@ import org.bukkit.Material;
 
 public enum Minigame {
     ForceItemBattle(Material.DIAMOND_SWORD, "Force Item Battle", 0, "startForceItem"),
-    ForceItemBattleSameItems(Material.NETHERITE_SWORD, "Force Item Battle (Same Items)", 1, "startForceItemSameItem");
+    ForceItemBattleSameItems(Material.NETHERITE_SWORD, "Force Item Battle (Same Items)", 1, "startForceItemSameItem"),
+    BlockRandomizer(Material.DIAMOND_PICKAXE, "Block Randomizer", 2, "startBlockRandomizer"),
+    ForceItemBattleTeams(Material.GOLDEN_SWORD, "Force Item Battle Teams", 3, "startForceItemTeams"),
+    OnlyChests(Material.CHEST, "Only Chests", 4, "startOnlyChests"),;
     //ForceItemBattleTeams(Material.GOLDEN_SWORD, "Force Item Battle (Teams)", 2, "startForceItemTeams"),;
 
     final Material material;

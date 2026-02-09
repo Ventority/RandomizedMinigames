@@ -1,9 +1,10 @@
 package de.ventority.randomizedminigames.Minigames;
 
-import de.ventority.randomizedminigames.GUI.InGame.GamesScoreboardManager;
-import de.ventority.randomizedminigames.misc.MinigameHandler;
-import de.ventority.randomizedminigames.misc.PlayerBackup;
-import de.ventority.randomizedminigames.misc.Settings;
+import de.ventority.randomizedminigames.gui.InGame.GamesScoreboardManager;
+import de.ventority.randomizedminigames.misc.Timer.Timer;
+import de.ventority.randomizedminigames.util.MinigameHandler;
+import de.ventority.randomizedminigames.util.PlayerBackupHandler;
+import de.ventority.randomizedminigames.util.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -14,13 +15,19 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import de.ventority.randomizedminigames.misc.Timer;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class ForceItemBattle implements MinigameBase, Listener {
@@ -30,51 +37,25 @@ public class ForceItemBattle implements MinigameBase, Listener {
     private final int id;
     private GamesScoreboardManager scoreboardManager;
     protected final List<Player> contestants;
-    private final HashMap<Player, PlayerBackup> backups;
+    private final PlayerBackupHandler backups;
     private final Player owner;
     protected Settings settings;
-    private Timer timer;
-    private List<Player> disconnected = new ArrayList<>();
+    private final Timer timer;
+    private final List<Player> disconnected = new ArrayList<>();
+    private final HashMap<Player, Integer> skips = new HashMap<>();
 
-    private final List<Material> SURVIVAL_ITEMS = Arrays.stream(Material.values())
-            .filter(Material::isItem)
-            .filter(m -> {
-                String name = m.name();
-                return !name.contains("SPAWN_EGG") &&
-                        !name.contains("COMMAND") &&
-                        !name.contains("STRUCTURE") &&
-                        !name.contains("JIGSAW") &&
-                        !name.contains("DEBUG") &&
-                        !name.contains("BARRIER") &&
-                        !name.contains("KNOWLEDGE_BOOK") &&
-                        !name.contains("LIGHT") &&
-                        !name.contains("INFESTED") &&
-                        !name.contains("BEDROCK") &&
-                        !name.contains("VOID") &&
-                        !name.contains("REINFORCED_DEEPSLATE") &&
-                        !name.contains("END_PORTAL") &&
-                        !name.contains("END_GATEWAY") &&
-                        !name.contains("NETHER_PORTAL") &&
-                        !name.contains("POTTED_") &&
-                        !name.contains("MUSIC") &&
-                        !name.contains("AMETHYST_BUD") &&
-                        !name.contains("OXIDIZED") &&
-                        !name.contains("AMETHYST") &&
-                        !name.contains("PURPUR") &&
-                        !name.contains("EXPOSED");
-            })
-            .toList();
+    private final List<Material> SURVIVAL_ITEMS = loadMaterials();
 
 
     public ForceItemBattle(List<Player> players, Player owner) {
         settings = MinigameHandler.getSettings(owner);
-        timer = new Timer(settings.timerStop, players, this, "");
-
+        timer = new Timer(players, this, "");
+        timer.setStopTime(settings.getTimeLimit());
         id = new Random().nextInt(1024);
         currentItems = new HashMap<>();
         currentScores = new HashMap<>();
         itemDisplays = new HashMap<>();
-        backups = new HashMap<>();
+        backups = new PlayerBackupHandler(players);
         contestants = players;
         this.owner = owner;
         if (MinigameHandler.getSettings(owner).getScoreboardStatus())
@@ -82,6 +63,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
         for (Player player : players) {
             currentItems.put(player, null);
             currentScores.put(player, 0);
+            skips.put(player, 3);
 
             BossBar bar = Bukkit.createBossBar("Null", BarColor.PURPLE, BarStyle.SOLID);
             bar.addPlayer(player);
@@ -89,7 +71,6 @@ public class ForceItemBattle implements MinigameBase, Listener {
             itemDisplays.put(player, bar);
 
             updatePlayerItem(player, getRandomItem());
-            backups.put(player, new PlayerBackup(player.getInventory().getContents(), player.getInventory().getArmorContents(), player.getExp(), player.getLocation(), player.getGameMode()));
             player.getInventory().clear();
 
             ItemStack skip = new ItemStack(Material.BARRIER, 3);
@@ -110,11 +91,6 @@ public class ForceItemBattle implements MinigameBase, Listener {
     @Override
     public String getName() {
         return "Force Item Battle";
-    }
-
-    @Override
-    public ItemStack getSymbol() {
-        return new ItemStack(Material.DIAMOND_SWORD, 1);
     }
 
     @Override
@@ -172,6 +148,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
                 player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
         }
     }
+
     public void stopGame() {
         Map.Entry<Player, Integer> bestEntry = currentScores.entrySet()
                 .stream()
@@ -180,10 +157,12 @@ public class ForceItemBattle implements MinigameBase, Listener {
         assert bestEntry != null;
         stopGame(bestEntry.getKey());
     }
+
     private void stopGame(Player winner) {
         showEndMessage(winner);
         timer.pauseCounter();
-        Timer t = new Timer(10, contestants, this, this::killGame, true, "Resetting game in: ");
+        Timer t = new Timer(contestants, this, this::killGame, "Resetting game in: ");
+        t.setStopTime(10);
         t.startCounter();
     }
 
@@ -202,9 +181,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
     }
 
     public void killGame() {
-        for (Player p : contestants) {
-            restorePlayer(p);
-        }
+        backups.restoreAll();
         for (Player p : itemDisplays.keySet()) {
             itemDisplays.get(p).setVisible(false);
             itemDisplays.get(p).removePlayer(p);
@@ -224,16 +201,6 @@ public class ForceItemBattle implements MinigameBase, Listener {
         MinigameHandler.deleteGame(this);
     }
 
-    private void restorePlayer(Player p) {
-        PlayerBackup backup = backups.get(p);
-        p.teleport(backup.getLocation());
-        p.setExp(backup.getExp());
-        p.getInventory().clear();
-        p.getInventory().setContents(backup.getInventory());
-        p.getInventory().setArmorContents(backup.getArmor());
-        p.setGameMode(backup.getGamemode());
-    }
-
     public List<Player> getPlayers() {
         return contestants;
     }
@@ -242,10 +209,34 @@ public class ForceItemBattle implements MinigameBase, Listener {
         ItemStack curItem = currentItems.get(p);
         p.getInventory().addItem(curItem);
         checkItem(p, curItem);
+        skips.put(p, skips.get(p) - 1);
     }
 
     public Player getOwner() {
         return owner;
+    }
+
+    private List<Material> loadMaterials() {
+        List<Material> mats = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("obtainableItems.txt"))))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                Material mat = Material.getMaterial(line);
+                if (mat != null) {
+                    mats.add(mat);
+                } else {
+                    System.out.println("Unbekanntes Material: " + line);
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return mats;
     }
 
     @EventHandler
@@ -273,6 +264,44 @@ public class ForceItemBattle implements MinigameBase, Listener {
         if (contestants.contains(e.getPlayer())) {
             disconnected.add(e.getPlayer());
             removePlayer(e.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        if (disconnected.contains(e.getPlayer())) {
+
+        }
+    }
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_AIR &&
+                event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        ItemStack item = event.getItem();
+        if (item == null || item.getType() != Material.BARRIER) return;
+        Player p = event.getPlayer();
+        try {
+            if (MinigameHandler.getMinigames().isEmpty()) return;
+            for (MinigameBase minigame : MinigameHandler.getMinigames()) {
+                if ((minigame instanceof ForceItemBattle) && contestants.contains(p) && skips.get(p) > 0) {
+                    ((ForceItemBattle) minigame).skipItem(p);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        p.sendMessage(ChatColor.GREEN + "Skipped Item.");
+        if (item.getAmount() > 1)
+            item.setAmount(item.getAmount() - 1);
+        else
+            p.getInventory().remove(item);
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent e) {
+        if (contestants.contains(e.getPlayer())) {
+            ItemStack skip = new ItemStack(Material.BARRIER, skips.get(e.getPlayer()));
+            e.getPlayer().getInventory().addItem(skip);
         }
     }
 }

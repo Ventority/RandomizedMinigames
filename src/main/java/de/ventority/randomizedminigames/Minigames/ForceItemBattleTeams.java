@@ -1,5 +1,6 @@
 package de.ventority.randomizedminigames.Minigames;
 
+import de.ventority.randomizedminigames.util.Team;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;

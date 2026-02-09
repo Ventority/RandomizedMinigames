@@ -9,7 +9,6 @@ import java.util.List;
 public interface MinigameBase extends Listener {
     int getID();
     String getName();
-    ItemStack getSymbol();
     void addPlayers(List<Player> players);
     List<Player> getPlayers();
     void killGame();
