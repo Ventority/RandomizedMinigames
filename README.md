@@ -63,7 +63,7 @@ I got inspired by a streamer and youtuber who plays these kinds of Minigames (Ba
 <!-- GETTING STARTED -->
 ### Installation
 As every Spigot Plugin
-1. Download the newest .jar file in the Releases-Tab
+1. Download the newest .jar file in the Releases-Tab (available soon™)
 2. Place the .jar file inside your Spigot-Server's plugins-folder
 3. Enjoy
 
@@ -112,7 +112,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.md` for more information.
+Distributed under the GPL v3 License. See `LICENSE.md` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
