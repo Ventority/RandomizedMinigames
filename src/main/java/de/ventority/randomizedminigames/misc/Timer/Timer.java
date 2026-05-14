@@ -2,13 +2,16 @@ package de.ventority.randomizedminigames.misc.Timer;
 
 import de.ventority.randomizedminigames.Minigames.MinigameBase;
 import de.ventority.randomizedminigames.RandomizedMinigames;
+import de.ventority.randomizedminigames.misc.ColorCycler;
 import de.ventority.randomizedminigames.util.MinigameHandler;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.awt.Color;
 import java.util.List;
 
 
@@ -23,7 +26,11 @@ public class Timer {
     private boolean isReversed = false;
     private String customText;
     private int countedSeconds = 0;
-    private String defaultText;
+    private final ColorCycler colorCycler = new ColorCycler(
+            new Color(110, 0, 145),
+            new Color(130, 50, 170),
+            0.2
+    );
 
     public Timer(List<Player> players, MinigameBase minigame, String text) {
         this.players = players;
@@ -49,14 +56,13 @@ public class Timer {
 
         counterTask = Bukkit.getScheduler().runTaskTimer(RandomizedMinigames.serverSettingsHandler.getPlugin(), () -> {
             countedSeconds = counter / 20;
-            updateText();
             updatePlayers();
             if (!isPaused) {
                 counter++;
-                if (countedSeconds == stopTime && MinigameHandler.getSettings(minigame.getOwner()).isTimed) {
+                if (countedSeconds == stopTime) {
                     if (methodToCall != null)
                         methodToCall.run();
-                    else
+                    else if (MinigameHandler.getSettings(minigame.getOwner()).isTimed)
                         minigame.stopGame();
                     stopCounter();
                 }
@@ -104,30 +110,11 @@ public class Timer {
     }
 
     private void updatePlayers() {
-//        int amplitude = 40;
-//
-//        int step = counter % (amplitude * 2);
-//        int brightness = step <= amplitude ? step : (amplitude * 2 - step);
-//
-//        int baseRed = 125;
-//        int baseGreen = 0;
-//        int baseBlue = 130;
-//
-//
-//        Color c = new Color(
-//                baseRed + 2*brightness,
-//                baseGreen,
-//                baseBlue + 2*brightness
-//        );
-//
-        TextComponent msg = new TextComponent(defaultText);
-//        msg.setColor(ChatColor.of(c));
-        msg.setBold(true);
-
+        TextComponent msg = new TextComponent("§l" + updateText());
+        msg.setColor(ChatColor.of(colorCycler.getColor(counter)));
         for (Player player : players) {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, msg);
         }
-
     }
 
     public void setStopTime(int seconds) {

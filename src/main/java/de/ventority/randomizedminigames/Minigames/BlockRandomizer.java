@@ -1,6 +1,7 @@
 package de.ventority.randomizedminigames.Minigames;
 
 import de.ventority.randomizedminigames.misc.Timer.Timer;
+import de.ventority.randomizedminigames.util.MinigameHandler;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EnderDragon;
@@ -70,12 +71,14 @@ public class BlockRandomizer implements MinigameBase {
 
     @Override
     public void killGame() {
-
+        timer.stopCounter();
+        MinigameHandler.resetSettings(owner);
+        MinigameHandler.deleteGame(this);
     }
 
     @Override
     public void stopGame() {
-
+        killGame();
     }
 
     @Override

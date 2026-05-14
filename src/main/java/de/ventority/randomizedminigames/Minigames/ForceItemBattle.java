@@ -1,17 +1,20 @@
 package de.ventority.randomizedminigames.Minigames;
 
+import de.ventority.randomizedminigames.RandomizedMinigames;
 import de.ventority.randomizedminigames.gui.InGame.GamesScoreboardManager;
+import de.ventority.randomizedminigames.misc.ColorCycler;
 import de.ventority.randomizedminigames.misc.Timer.Timer;
 import de.ventority.randomizedminigames.util.MinigameHandler;
 import de.ventority.randomizedminigames.util.PlayerBackupHandler;
 import de.ventority.randomizedminigames.util.Settings;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,10 +28,12 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.UUID;
 
 public class ForceItemBattle implements MinigameBase, Listener {
     protected final HashMap<Player, ItemStack> currentItems;
@@ -41,8 +46,24 @@ public class ForceItemBattle implements MinigameBase, Listener {
     private final Player owner;
     protected Settings settings;
     private final Timer timer;
-    private final List<Player> disconnected = new ArrayList<>();
+    private final HashMap<UUID, DisconnectedState> disconnectedStates = new HashMap<>();
     private final HashMap<Player, Integer> skips = new HashMap<>();
+    private boolean isActive = true;
+
+    private static class DisconnectedState {
+        final ItemStack currentItem;
+        final int score;
+        final int skipsLeft;
+        DisconnectedState(ItemStack currentItem, int score, int skipsLeft) {
+            this.currentItem = currentItem;
+            this.score = score;
+            this.skipsLeft = skipsLeft;
+        }
+    }
+    private final ColorCycler bossBarColors = new ColorCycler(
+            new Color(130, 50, 170), new Color(160, 50, 190), 0.2);
+    private int bossBarTick = 0;
+    private org.bukkit.scheduler.BukkitTask bossBarTask;
 
     private final List<Material> SURVIVAL_ITEMS = loadMaterials();
 
@@ -81,6 +102,20 @@ public class ForceItemBattle implements MinigameBase, Listener {
             player.getInventory().addItem(skip);
         }
         timer.startCounter();
+        bossBarTask = Bukkit.getScheduler().runTaskTimer(
+                RandomizedMinigames.serverSettingsHandler.getPlugin(),
+                () -> {
+                    String color = ChatColor.of(bossBarColors.getColor(bossBarTick++)).toString();
+                    for (Map.Entry<Player, BossBar> entry : new HashMap<>(itemDisplays).entrySet()) {
+                        ItemStack item = currentItems.get(entry.getKey());
+                        if (item == null) continue;
+                        String name = item.getType().getTranslationKey()
+                                .replace("block.minecraft.", "")
+                                .replace("_", " ")
+                                .replace("item.minecraft.", "");
+                        entry.getValue().setTitle(color + ChatColor.BOLD + name);
+                    }
+                }, 0L, 1L);
     }
 
     @Override
@@ -121,11 +156,6 @@ public class ForceItemBattle implements MinigameBase, Listener {
 
     protected void updatePlayerItem(Player player, ItemStack item) {
         currentItems.replace(player, item);
-        String key = currentItems.get(player).getType().getTranslationKey();
-        String displayName = key.replace("block.minecraft.", "")
-                .replace("_", " ")
-                .replace("item.minecraft.", "");
-        itemDisplays.get(player).setTitle(displayName);
         ItemStack[] contents = player.getInventory().getContents();
         for (ItemStack i : contents)
             checkItem(player, i);
@@ -163,6 +193,7 @@ public class ForceItemBattle implements MinigameBase, Listener {
         timer.pauseCounter();
         Timer t = new Timer(contestants, this, this::killGame, "Resetting game in: ");
         t.setStopTime(10);
+        t.setReversed(true);
         t.startCounter();
     }
 
@@ -181,22 +212,28 @@ public class ForceItemBattle implements MinigameBase, Listener {
     }
 
     public void killGame() {
-        backups.restoreAll();
-        for (Player p : itemDisplays.keySet()) {
-            itemDisplays.get(p).setVisible(false);
-            itemDisplays.get(p).removePlayer(p);
+        isActive = false;
+        timer.stopCounter();
+        if (bossBarTask != null) bossBarTask.cancel();
+
+        for (BossBar bar : itemDisplays.values()) {
+            bar.setVisible(false);
+            bar.removeAll();
         }
         itemDisplays.clear();
 
-        if (settings.getScoreboardStatus()) {
+        if (scoreboardManager != null) {
             scoreboardManager.removeScoreboard();
             scoreboardManager = null;
         }
 
-        if (settings.getScoreboardStatus())
-            for (Player player : contestants)
-                player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
-        itemDisplays.clear();
+        Scoreboard main = Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard();
+        for (Player player : contestants) {
+            if (player.isOnline())
+                player.setScoreboard(main);
+        }
+
+        backups.restoreAll();
         MinigameHandler.resetSettings(owner);
         MinigameHandler.deleteGame(this);
     }
@@ -261,16 +298,50 @@ public class ForceItemBattle implements MinigameBase, Listener {
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent e) {
-        if (contestants.contains(e.getPlayer())) {
-            disconnected.add(e.getPlayer());
-            removePlayer(e.getPlayer());
-        }
+        Player p = e.getPlayer();
+        if (!contestants.contains(p)) return;
+
+        disconnectedStates.put(p.getUniqueId(), new DisconnectedState(
+                currentItems.get(p),
+                currentScores.getOrDefault(p, 0),
+                skips.getOrDefault(p, 0)
+        ));
+        currentItems.remove(p);
+        currentScores.remove(p);
+        skips.remove(p);
+        removePlayer(p);
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        if (disconnected.contains(e.getPlayer())) {
+        Player p = e.getPlayer();
+        UUID uuid = p.getUniqueId();
+        DisconnectedState state = disconnectedStates.remove(uuid);
+        if (state == null) return;
 
+        if (isActive) {
+            // Re-add player to the running game
+            contestants.add(p);
+            currentItems.put(p, state.currentItem);
+            currentScores.put(p, state.score);
+            skips.put(p, state.skipsLeft);
+
+            BossBar bar = Bukkit.createBossBar("", BarColor.PURPLE, BarStyle.SOLID);
+            bar.addPlayer(p);
+            bar.setVisible(true);
+            itemDisplays.put(p, bar);
+
+            if (settings.getScoreboardStatus() && scoreboardManager != null)
+                p.setScoreboard(scoreboardManager.getScoreboard());
+
+            p.getInventory().clear();
+            ItemStack skipItem = new ItemStack(Material.BARRIER, state.skipsLeft);
+            org.bukkit.inventory.meta.ItemMeta meta = skipItem.getItemMeta();
+            if (meta != null) { meta.setDisplayName(org.bukkit.ChatColor.RED + "Skip"); skipItem.setItemMeta(meta); }
+            if (state.skipsLeft > 0) p.getInventory().addItem(skipItem);
+        } else {
+            // Game already ended — restore their pre-game backup
+            PlayerBackupHandler.restoreIfPending(p);
         }
     }
     @EventHandler

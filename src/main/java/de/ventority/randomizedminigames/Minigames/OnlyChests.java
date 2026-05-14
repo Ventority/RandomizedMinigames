@@ -1,6 +1,7 @@
 package de.ventority.randomizedminigames.Minigames;
 
 import de.ventority.randomizedminigames.misc.Timer.Timer;
+import de.ventority.randomizedminigames.util.MinigameHandler;
 import org.bukkit.Material;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EntityType;
@@ -47,17 +48,19 @@ public class OnlyChests implements MinigameBase{
 
     @Override
     public void killGame() {
-
+        timer.stopCounter();
+        MinigameHandler.resetSettings(owner);
+        MinigameHandler.deleteGame(this);
     }
 
     @Override
     public void stopGame() {
-
+        killGame();
     }
 
     @Override
     public Player getOwner() {
-        return null;
+        return owner;
     }
 
     @EventHandler
@@ -73,8 +76,7 @@ public class OnlyChests implements MinigameBase{
             timer.pauseCounter();
         }
         if (event.getDamageSource().getCausingEntity() instanceof Player && contestants.contains((Player) event.getDamageSource().getCausingEntity()))
-            if (event.getEntity().getType() != EntityType.BLAZE) {
+            if (event.getEntity().getType() != EntityType.BLAZE)
                 event.getDrops().clear();
-            }
     }
 }

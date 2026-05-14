@@ -2,7 +2,10 @@ package de.ventority.randomizedminigames;
 
 import de.ventority.randomizedminigames.gui.GUIClickEvent;
 import de.ventority.randomizedminigames.util.MinigameHandler;
+import de.ventority.randomizedminigames.util.PlayerBackupHandler;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RandomizedMinigames extends JavaPlugin implements Listener {
@@ -19,6 +22,11 @@ public final class RandomizedMinigames extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         MinigameHandler.killAll();
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        PlayerBackupHandler.restoreIfPending(e.getPlayer());
     }
 
     private void init() {
