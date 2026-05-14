@@ -1,5 +1,6 @@
 package de.ventority.randomizedminigames.util;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -86,6 +87,22 @@ public class Settings {
 
     public void setTimeLimit(int timeLimit) {
         this.timeLimit = timeLimit;
+    }
+
+    public void initTeams() {
+        teams.clear();
+        selectedPlayers.clear();
+        ChatColor[] colors = {
+                ChatColor.GREEN, ChatColor.RED, ChatColor.BLUE,
+                ChatColor.DARK_PURPLE, ChatColor.BLACK, ChatColor.DARK_GREEN
+        };
+        for (int i = 0; i < selectedTeamCount; i++) {
+            teams.add(new Team(new ArrayList<>(), colors[i]));
+        }
+    }
+
+    public List<Team> getTeams() {
+        return teams;
     }
 
     public Team getTeam(int i) {

@@ -16,13 +16,18 @@ public class MinigameHandler {
 
     public static void createMinigame(int gameNumber, Player caller) {
         List<Player> players = settings.get(caller).getSelectedPlayers();
+        MinigameBase newGame = null;
         switch (gameNumber) {
-            case 0: minigames.add(new ForceItemBattle(players, caller)); break;
-            case 1: minigames.add(new ForceItemBattleSameItems(players, caller)); break;
-            case 2: minigames.add(new BlockRandomizer(players, caller)); break;
-            case 4: minigames.add(new OnlyChests(players, caller)); break;
+            case 0: newGame = new ForceItemBattle(players, caller); break;
+            case 1: newGame = new ForceItemBattleSameItems(players, caller); break;
+            case 2: newGame = new BlockRandomizer(players, caller); break;
+            case 3: newGame = new ForceItemBattleTeams(players, caller, settings.get(caller).getTeams()); break;
+            case 4: newGame = new OnlyChests(players, caller); break;
         }
-        getServer().getPluginManager().registerEvents(minigames.getFirst(), RandomizedMinigames.serverSettingsHandler.getPlugin());
+        if (newGame != null) {
+            minigames.add(newGame);
+            getServer().getPluginManager().registerEvents(newGame, RandomizedMinigames.serverSettingsHandler.getPlugin());
+        }
     }
 
     public static List<MinigameBase> getMinigames() {
@@ -45,7 +50,7 @@ public class MinigameHandler {
     }
 
     public static void killAll() {
-        for (MinigameBase minigame : minigames)
+        for (MinigameBase minigame : new ArrayList<>(minigames))
             minigame.killGame();
     }
 

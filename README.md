@@ -13,7 +13,7 @@
 <h3 align="center">Randomized Minigames</h3>
 
   <p align="center">
-    This spigot plugin adds a couple of Minigames to Minecraft all based on some sort of randomization. Currently working are two different types of Force Item Battles, a type of minigame where each player has to aquire an item faster than the others.
+    This spigot plugin adds a couple of Minigames to Minecraft all based on some sort of randomization. Currently working are five different Minigames, including three variants of Force Item Battle, a type of minigame where each player has to aquire an item faster than the others.
     <br />
     <a><strong>Explore the docs »</strong> <italic>There, sadly, are no docs yet.</italic></a>
     <br />
@@ -39,7 +39,13 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li>
+      <a href="#usage">Usage</a>
+      <ul>
+        <li><a href="#minigames">Minigames</a></li>
+        <li><a href="#setup">Setup</a></li>
+      </ul>
+    </li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -77,13 +83,41 @@ As every Spigot Plugin
 `/minigames` - Opens a GUI of all available Minigames.<br>
 `/minigames killall`- Kills all minigames currently running, will be removed in the future since it shouldn't be necessary<br>
 
+### Minigames
+
+| Name | Description |
+|---|---|
+| **Force Item Battle** | Each player is assigned a random item and has to obtain it first. Items are assigned individually, so everyone is hunting something different. |
+| **Force Item Battle (Same Items)** | Same as above, but all players share the same target item at any given time. |
+| **Force Item Battle (Teams)** | The team variant. Players are split into teams of 2–6, and teammates share a target item. First team to reach the win limit wins. |
+| **Block Randomizer** | Block drops are randomized per player — breaking any block gives you a random item instead of the usual drop. |
+| **Only Chests** | Mob drops and block drops are disabled. The only way to get items is from chests. |
+
+### Setup
+
+After selecting a minigame, you get a setup screen with the following options:
+
+- **Select Players** — pick who participates
+- **Win Limit** — set the number of items a player (or team) needs to collect to win. Shows the current limit in green when active, red "Off" when disabled.
+- **Timer** — set a time limit after which the game ends and the player with the highest score wins. Shows the remaining time in green when active, red "Off" when disabled.
+
+Win Limit and Timer are mutually exclusive — enabling one disables the other.
+
+For **Force Item Battle Teams**, there's an extra step before the setup screen where you choose the number of teams and assign players to each one.
+
+**After every minigame**, all players are restored to their pre-game state: inventory, armor, offhand, XP level, health, food, and position are all put back. There's a 10-second countdown on the action bar before the reset happens.
+
+If a player **disconnects mid-game**, they can rejoin and be put back into the running game with their score intact. If the game has already ended by the time they reconnect, their inventory is restored then instead.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Fully implementing Force-Item-Battle Team variant
+- [x] Fully implementing Force-Item-Battle Team variant
+- [x] Make the GUI easier to work with
 - [ ] Add another minigame, not sure which atm
-- [ ] Make the GUI easier to work with
 - [ ] Adding usefull JavaDocs
 - [ ] probably other stuff I currently dont think about. 
 
@@ -125,6 +159,5 @@ Distributed under the GPL v3 License. See `LICENSE.md` for more information.
 * []() <a href="https://github.com/othneildrew">othneildrew</a> for the amazing README template
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
